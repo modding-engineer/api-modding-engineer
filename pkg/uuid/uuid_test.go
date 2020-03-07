@@ -107,14 +107,38 @@ func TestFromDomain(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	type args struct {
-		value string
+		value interface{}
 	}
 	tests := []struct {
 		name string
 		args args
 		want UUID
 	}{
-		// TODO: Add test cases.
+		{
+			"gets default root host",
+			args{"modding.engineer"},
+			UUID(uuid.MustParse("3f23498c-b045-523a-94ab-dd0e7d7b973c")),
+		},
+		{
+			"gets default root url",
+			args{"https://api.modding.engineer/"},
+			UUID(uuid.MustParse("6109d8c9-6102-5d6c-bc6a-777248c7e3ce")),
+		},
+		{
+			"gets same value as host helper",
+			args{"sub.modding.engineer"},
+			FromDomain("sub.modding.engineer"),
+		},
+		{
+			"gets same value as url helper",
+			args{"https://sub.api.modding.engineer"},
+			FromAPIURL("https://sub.api.modding.engineer"),
+		},
+		{
+			"handles one of our namespace UUIDs",
+			args{dnsNameSpace},
+			UUID(uuid.MustParse("3f23498c-b045-523a-94ab-dd0e7d7b973c")),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,6 +147,18 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+	t.Run("panics with unresolved namespace", func(t *testing.T) {
+		panicValue := struct{}{}
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using value %v should have generated a panic", panicValue)
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = New(panicValue)
+	})
+
 }
 
 var _ fmt.Stringer = new(UUID)

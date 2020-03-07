@@ -39,6 +39,13 @@ func newFromString(v string) (UUID, error) {
 
 func New(value interface{}) UUID {
 	switch v := value.(type) {
+	case uuid.UUID:
+		switch v {
+		case dnsNameSpace, apiURLNameSpace:
+			return UUID(v)
+		default:
+			panic(fmt.Errorf("unknown uuid: %v", value))
+		}
 	case string:
 		id, err := newFromString(v)
 		if err != nil {
