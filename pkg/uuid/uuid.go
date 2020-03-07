@@ -25,7 +25,7 @@ func FromAPIURL(apiUrl string) UUID {
 	if err != nil {
 		panic(err)
 	}
-	if u.Hostname() != "api.modding.engineer" {
+	if u.Hostname() != "api.modding.engineer" && !strings.HasSuffix(u.Hostname(), ".api.modding.engineer") {
 		panic(fmt.Errorf("refusing to create id for non-API url: %v", u.String()))
 	}
 	return New(APIURLNameSpace, u.String())

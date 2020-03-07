@@ -22,6 +22,11 @@ func TestFromAPIURL(t *testing.T) {
 			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
 		},
 		{
+			"Creates expected id from sub-domain url",
+			args{"https://other.api.modding.engineer/path"},
+			UUID(uuid.MustParse("8517e550-1af3-5518-b1dd-bfe60343e7c4")),
+		},
+		{
 			"Creates expected path url",
 			args{"https://api.modding.engineer/objects"},
 			UUID(uuid.MustParse("c9fece94-43f4-5d16-9591-c83ed963da62")),
