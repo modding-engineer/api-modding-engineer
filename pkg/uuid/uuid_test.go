@@ -1,6 +1,7 @@
 package uuid
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"reflect"
 	"testing"
@@ -20,6 +21,11 @@ func TestFromAPIURL(t *testing.T) {
 			args{"https://api.modding.engineer/"},
 			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
 		},
+		{
+			"Creates expected root url",
+			args{"https://api.modding.engineer/"},
+			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -34,6 +40,17 @@ func TestFromAPIURL(t *testing.T) {
 			}
 		})
 	}
+	t.Run("panics with external URLs", func(t *testing.T) {
+		panicUrl := "https://api.example.com/panic"
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using URL %v should have generated a panic", panicUrl)
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = FromAPIURL(panicUrl)
+	})
 }
 
 func TestFromSubDomain(t *testing.T) {
