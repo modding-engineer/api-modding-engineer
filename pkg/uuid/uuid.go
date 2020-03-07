@@ -40,7 +40,6 @@ func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
 			return false
 		}
 		return u.String() == FromAPIURL(u.Path).String()
-	default:
-		return false
 	}
+	return false
 }
