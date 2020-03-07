@@ -152,3 +152,5 @@ func TestNew(t *testing.T) {
 		})
 	}
 }
+
+var _ fmt.Stringer = new(UUID)
