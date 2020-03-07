@@ -169,25 +169,3 @@ func TestUUID_String(t *testing.T) {
 		})
 	}
 }
-
-func TestUUID_Validate(t *testing.T) {
-	type args struct {
-		nameSpace uuid.UUID
-		value     string
-	}
-	tests := []struct {
-		name string
-		u    UUID
-		args args
-		want bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.u.Validate(tt.args.nameSpace, tt.args.value); got != tt.want {
-				t.Errorf("Validate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
