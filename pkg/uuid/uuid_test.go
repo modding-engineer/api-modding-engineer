@@ -58,7 +58,7 @@ func TestFromAPIURL(t *testing.T) {
 	})
 }
 
-func TestFromSubDomain(t *testing.T) {
+func TestFromDomain(t *testing.T) {
 	type args struct {
 		id      uuid.UUID
 		newHost string
@@ -68,15 +68,68 @@ func TestFromSubDomain(t *testing.T) {
 		args args
 		want UUID
 	}{
-		// TODO: Add test cases.
+		{
+			"Root domain uuid",
+			args{DNSNameSpace, "modding.engineer"},
+			UUID(uuid.MustParse("5d987235-de1d-5db2-9c14-ec2034a49528")),
+		},
+		{
+			"Sub-domain uuid",
+			args{DNSNameSpace, "sub.modding.engineer"},
+			UUID(uuid.MustParse("be3f8955-ef1d-5f8c-8591-6c2215f53024")),
+		},
+		{
+			"API sub-domain uuid",
+			args{APIDNSNameSpace, "sub.api.modding.engineer"},
+			UUID(uuid.MustParse("542588a7-38ea-56fe-92ac-b85ae42ed951")),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FromSubDomain(tt.args.id, tt.args.newHost); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromSubDomain() = %v, want %v", got, tt.want)
+			if got := FromDomain(tt.args.id, tt.args.newHost); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FromDomain() = %v, want %v", got, tt.want)
+			} else {
+				t.Run("validated", func(t *testing.T) {
+					if !got.Validate(tt.args.id, tt.args.newHost) {
+						t.Errorf("FromDomain() did not create a validated uuid; got: %v", got.String())
+					}
+				})
 			}
 		})
 	}
+	t.Run("panics with invalid namespace id", func(t *testing.T) {
+		panicId := uuid.New()
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using namespace %v should have generated a panic", panicId.String())
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = FromDomain(panicId, "modding.engineer")
+	})
+	t.Run("panics with invalid host", func(t *testing.T) {
+		panicHost := "example.com"
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using hostname %v should have generated a panic", panicHost)
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = FromDomain(DNSNameSpace, panicHost)
+	})
+	t.Run("panics with invalid api host", func(t *testing.T) {
+		panicHost := "blert.modding.engineer"
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using hostname %v should have generated a panic", panicHost)
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = FromDomain(APIDNSNameSpace, panicHost)
+	})
 }
 
 func TestNew(t *testing.T) {

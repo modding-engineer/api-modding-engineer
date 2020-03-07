@@ -30,19 +30,48 @@ func FromAPIURL(apiUrl string) UUID {
 	}
 	return New(APIURLNameSpace, u.String())
 }
-func FromSubDomain(id uuid.UUID, newHost string) UUID { return New(id, newHost) }
-func (u UUID) String() string                         { return uuid.UUID(u).String() }
+
+func FromDomain(id uuid.UUID, newHost string) UUID {
+	var U UUID
+	switch id {
+	case DNSNameSpace:
+		if newHost != "modding.engineer" && !strings.HasSuffix(newHost, ".modding.engineer") {
+			panic(fmt.Errorf("refusing to create id for invalid sub-domain: %v", newHost))
+		}
+		if strings.HasSuffix(newHost, ".modding.engineer") {
+			U = New(id, strings.TrimSuffix(newHost, ".modding.engineer"))
+			break
+		}
+		U = New(id, newHost)
+	case APIDNSNameSpace:
+		if newHost != "api.modding.engineer" && !strings.HasSuffix(newHost, ".api.modding.engineer") {
+			panic(fmt.Errorf("refusing to create id for invalid sub-domain: %v", newHost))
+		}
+		if strings.HasSuffix(newHost, ".api.modding.engineer") {
+			U = New(id, strings.TrimSuffix(newHost, ".api.modding.engineer"))
+			break
+		}
+		U = New(id, newHost)
+	default:
+		panic(fmt.Errorf("refusing to create id in unknown namespace: %v", id.String()))
+	}
+	return U
+}
+
+func (u UUID) String() string { return uuid.UUID(u).String() }
 func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
 	switch nameSpace {
 	case DNSNameSpace:
 		if strings.HasSuffix(value, ".modding.engineer") {
-			subDomain := strings.TrimSuffix(value, ".modding.engineers")
-			return u.String() == FromSubDomain(DNSNameSpace, subDomain).String()
+			return u.String() == FromDomain(DNSNameSpace, value).String()
+		} else if value == "modding.engineer" {
+			return u.String() == FromDomain(DNSNameSpace, value).String()
 		}
 	case APIDNSNameSpace:
 		if strings.HasSuffix(value, ".api.modding.engineer") {
-			subDomain := strings.TrimSuffix(value, ".api.modding.engineer")
-			return u.String() == FromSubDomain(APIDNSNameSpace, subDomain).String()
+			return u.String() == FromDomain(APIDNSNameSpace, value).String()
+		} else if value == "api.modding.engineer" {
+			return u.String() == FromDomain(APIDNSNameSpace, value).String()
 		}
 	case APIURLNameSpace:
 		apiUrl, err := url.Parse(value)
