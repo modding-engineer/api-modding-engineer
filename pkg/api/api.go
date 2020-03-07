@@ -32,7 +32,11 @@ func (A API) Sign(uri string) (uuid.UUID, error) {
 		}
 	}
 	if strings.HasPrefix(uri, "/") {
-		signUri := fmt.Sprintf("%v/%v", A.URL.String(), strings.TrimPrefix(uri, "/"))
+		signRoot := A.URL.String()
+		if strings.HasSuffix(signRoot, "/") {
+			signRoot = strings.TrimSuffix(signRoot, "/")
+		}
+		signUri := fmt.Sprintf("%v/%v", signRoot, strings.TrimPrefix(uri, "/"))
 		if _, err := url.Parse(signUri); err != nil {
 			return uuid.Nil, fmt.Errorf("%w: %v", InvalidSigningURIProvided, uri)
 		}
@@ -44,9 +48,6 @@ func (A API) Sign(uri string) (uuid.UUID, error) {
 func New(name, uri string) *API {
 	var A = &API{
 		Name: name,
-	}
-	if strings.HasSuffix(uri, "/") {
-		uri = strings.TrimSuffix(uri, "/")
 	}
 	A.URL, _ = url.Parse(uri)
 	A.UUID = uuid.New(A.URL.String())
