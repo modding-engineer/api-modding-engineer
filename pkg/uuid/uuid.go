@@ -10,22 +10,22 @@ import (
 type UUID uuid.UUID
 
 var (
-	DNSNameSpace    = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("modding.engineer"))
-	APIDNSNameSpace = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("api.modding.engineer"))
-	APIURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
+	dnsNameSpace    = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("modding.engineer"))
+	apiDNSNameSpace = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("api.modding.engineer"))
+	apiURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
 )
 
 func New(value string) UUID {
 	if u, err := url.Parse(value); err == nil {
 		if strings.HasSuffix(u.Hostname(), ".api.modding.engineer") || u.Hostname() == "api.modding.engineer" {
-			return newId(APIURLNameSpace, u.String())
+			return newId(apiURLNameSpace, u.String())
 		}
 	}
 	if strings.HasSuffix(value, ".api.modding.engineer") || value == "api.modding.engineer" {
-		return newId(APIDNSNameSpace, value)
+		return newId(apiDNSNameSpace, value)
 	}
 	if strings.HasSuffix(value, ".modding.engineer") || value == "modding.engineer" {
-		return newId(DNSNameSpace, value)
+		return newId(dnsNameSpace, value)
 	}
 	panic(fmt.Errorf("could not resolve namespace for value: %v", value))
 }
@@ -47,10 +47,10 @@ func FromAPIURL(apiUrl string) UUID {
 
 func FromDomain(newHost string) UUID {
 	if strings.HasSuffix(newHost, ".api.modding.engineer") || newHost == "api.modding.engineer" {
-		return newId(APIDNSNameSpace, newHost)
+		return newId(apiDNSNameSpace, newHost)
 	}
 	if strings.HasSuffix(newHost, ".modding.engineer") || newHost == "modding.engineer" {
-		return newId(DNSNameSpace, newHost)
+		return newId(dnsNameSpace, newHost)
 	}
 	panic(fmt.Errorf("refusing to create id for unknown host: %v", newHost))
 }

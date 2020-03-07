@@ -70,17 +70,17 @@ func TestFromDomain(t *testing.T) {
 	}{
 		{
 			"Root domain uuid",
-			args{DNSNameSpace, "modding.engineer"},
+			args{dnsNameSpace, "modding.engineer"},
 			UUID(uuid.MustParse("5d987235-de1d-5db2-9c14-ec2034a49528")),
 		},
 		{
 			"Sub-domain uuid",
-			args{DNSNameSpace, "sub.modding.engineer"},
+			args{dnsNameSpace, "sub.modding.engineer"},
 			UUID(uuid.MustParse("1323aeaf-e74d-5d50-9a73-d347568c49d9")),
 		},
 		{
 			"API sub-domain uuid",
-			args{APIDNSNameSpace, "sub.api.modding.engineer"},
+			args{apiDNSNameSpace, "sub.api.modding.engineer"},
 			UUID(uuid.MustParse("f4c524c2-d6c0-5c12-bf55-2869dd225f21")),
 		},
 	}
