@@ -22,9 +22,9 @@ var apiStoreCreateIndexStatement = `create unique index api_store_url_uindex
       	on api_store (url);`
 
 func APIS() *sql.DB {
-	var defaultPath string
-	flag.StringVar(&defaultPath, "api-datastore", "apiDatastore.sqlite", "datastore file for APIs")
+	var defaultPath = "apiDatastore.sqlite"
 	if !flag.Parsed() {
+		flag.StringVar(&defaultPath, "api-datastore", "apiDatastore.sqlite", "datastore file for APIs")
 		flag.Parse()
 	}
 	database, err := sql.Open("sqlite3", defaultPath)
