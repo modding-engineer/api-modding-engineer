@@ -2,20 +2,37 @@ package uuid
 
 import (
 	"github.com/google/uuid"
+	"strings"
 )
 
 type UUID uuid.UUID
 
-const DNSNameSpace = "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}"
-const URLNameSpace = "{6ba7b811-9dad-11d1-80b4-00c04fd430c8}"
+var (
+	DNSNameSpace    = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("modding.engineer"))
+	APIDNSNameSpace = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("api.modding.engineer"))
+	APIURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
+)
 
-func New(nameSpace string) UUID {
-	nameSpacedId := uuid.NewSHA1(uuid.New(), []byte(nameSpace))
+func New(nameSpace uuid.UUID, value string) UUID {
+	nameSpacedId := uuid.NewSHA1(nameSpace, []byte(value))
 	return UUID(nameSpacedId)
 }
 
-func FromAPIPath(apiPath string) UUID     { return New("https://api.modding.engineer" + apiPath) }
-func FromURL(fullUrl string) UUID         { return New(URLNameSpace + fullUrl) }
-func FromHostname(fullHost string) UUID   { return New(DNSNameSpace + fullHost) }
-func FromSubDomain(shortHost string) UUID { return FromHostname(shortHost + ".modding.engineer") }
-func (u UUID) String() string             { return uuid.UUID(u).String() }
+func FromAPIPath(apiPath string) UUID   { return New(APIURLNameSpace, apiPath) }
+func FromSubDomain(newHost string) UUID { return New(DNSNameSpace, newHost) }
+func (u UUID) String() string           { return uuid.UUID(u).String() }
+func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
+	switch nameSpace {
+	case DNSNameSpace:
+		if splits := strings.Split(value, "."); len(splits) > 2 {
+			stub := strings.Join(splits[len(splits)-2:], ".")
+			if stub == "modding.engineer" {
+				return u.String() == FromSubDomain(value).String()
+			}
+		}
+	case APIDNSNameSpace:
+		return APIDNSNameSpace.String() == value
+	case APIURLNameSpace:
+	}
+	return false
+}
