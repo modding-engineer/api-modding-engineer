@@ -1,6 +1,7 @@
 package uuid
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"net/url"
 	"strings"
@@ -19,7 +20,16 @@ func New(nameSpace uuid.UUID, value string) UUID {
 	return UUID(nameSpacedId)
 }
 
-func FromAPIURL(apiUrl string) UUID                   { return New(APIURLNameSpace, apiUrl) }
+func FromAPIURL(apiUrl string) UUID {
+	u, err := url.Parse(apiUrl)
+	if err != nil {
+		panic(err)
+	}
+	if u.Hostname() != "api.modding.engineer" {
+		panic(fmt.Errorf("refusing to create id for non-API url: %v", u.String()))
+	}
+	return New(APIURLNameSpace, u.String())
+}
 func FromSubDomain(id uuid.UUID, newHost string) UUID { return New(id, newHost) }
 func (u UUID) String() string                         { return uuid.UUID(u).String() }
 func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
@@ -35,11 +45,11 @@ func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
 			return u.String() == FromSubDomain(APIDNSNameSpace, subDomain).String()
 		}
 	case APIURLNameSpace:
-		u, err := url.Parse(value)
+		apiUrl, err := url.Parse(value)
 		if err != nil {
 			return false
 		}
-		return u.String() == FromAPIURL(u.Path).String()
+		return u.String() == FromAPIURL(apiUrl.String()).String()
 	}
 	return false
 }
