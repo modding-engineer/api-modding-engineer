@@ -14,6 +14,9 @@ var (
 	apiURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
 )
 
+func DNSNamespace() UUID { return UUID(dnsNameSpace) }
+func URLNamespace() UUID { return UUID(apiURLNameSpace) }
+
 func newFromString(v string) (UUID, error) {
 	if u, err := url.Parse(v); err == nil {
 		if strings.HasSuffix(u.Hostname(), ".api.modding.engineer") || u.Hostname() == "api.modding.engineer" {
