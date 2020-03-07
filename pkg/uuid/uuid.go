@@ -2,6 +2,7 @@ package uuid
 
 import (
 	"github.com/google/uuid"
+	"net/url"
 	"strings"
 )
 
@@ -18,21 +19,28 @@ func New(nameSpace uuid.UUID, value string) UUID {
 	return UUID(nameSpacedId)
 }
 
-func FromAPIPath(apiPath string) UUID   { return New(APIURLNameSpace, apiPath) }
+func FromAPIURL(apiUrl string) UUID     { return New(APIURLNameSpace, apiUrl) }
 func FromSubDomain(newHost string) UUID { return New(DNSNameSpace, newHost) }
 func (u UUID) String() string           { return uuid.UUID(u).String() }
 func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
 	switch nameSpace {
 	case DNSNameSpace:
-		if splits := strings.Split(value, "."); len(splits) > 2 {
-			stub := strings.Join(splits[len(splits)-2:], ".")
-			if stub == "modding.engineer" {
-				return u.String() == FromSubDomain(value).String()
-			}
+		if strings.HasSuffix(value, ".modding.engineer") {
+			subDomain := strings.TrimSuffix(value, ".modding.engineers")
+			return u.String() == FromSubDomain(subDomain).String()
 		}
 	case APIDNSNameSpace:
-		return APIDNSNameSpace.String() == value
+		if strings.HasSuffix(value, ".api.modding.engineer") {
+			subDomain := strings.TrimSuffix(value, ".api.modding.engineer")
+			return u.String() == New(APIDNSNameSpace, subDomain).String()
+		}
 	case APIURLNameSpace:
+		u, err := url.Parse(value)
+		if err != nil {
+			return false
+		}
+		return u.String() == FromAPIURL(u.Path).String()
+	default:
+		return false
 	}
-	return false
 }
