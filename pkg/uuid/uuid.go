@@ -17,7 +17,7 @@ var (
 func newFromString(v string) (UUID, error) {
 	if u, err := url.Parse(v); err == nil {
 		if strings.HasSuffix(u.Hostname(), ".api.modding.engineer") || u.Hostname() == "api.modding.engineer" {
-			if u.String() == "https://api.modding.engineer" {
+			if u.String() == "https://api.modding.engineer" || u.String() == "https://api.modding.engineer/" {
 				return UUID(apiURLNameSpace), nil
 			}
 			return newId(apiURLNameSpace, u.String()), nil
@@ -57,6 +57,9 @@ func newId(nameSpace uuid.UUID, value string) UUID {
 }
 
 func FromAPIURL(apiUrl string) UUID {
+	if apiUrl == "https://api.modding.engineer" || apiUrl == "https://api.modding.engineer/" {
+		return UUID(apiURLNameSpace)
+	}
 	u, err := url.Parse(apiUrl)
 	if err != nil {
 		panic(err)

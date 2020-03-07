@@ -19,7 +19,7 @@ func TestFromAPIURL(t *testing.T) {
 		{
 			"Creates expected root url",
 			args{"https://api.modding.engineer/"},
-			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
+			UUID(uuid.MustParse("6109d8c9-6102-5d6c-bc6a-777248c7e3ce")),
 		},
 		{
 			"Creates expected id from sub-domain url",
