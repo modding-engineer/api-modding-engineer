@@ -22,9 +22,9 @@ func TestFromAPIURL(t *testing.T) {
 			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
 		},
 		{
-			"Creates expected root url",
-			args{"https://api.modding.engineer/"},
-			UUID(uuid.MustParse("510213cc-19ec-54bd-b226-7bd180548e3e")),
+			"Creates expected path url",
+			args{"https://api.modding.engineer/objects"},
+			UUID(uuid.MustParse("c9fece94-43f4-5d16-9591-c83ed963da62")),
 		},
 	}
 	for _, tt := range tests {
