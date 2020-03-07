@@ -15,9 +15,23 @@ var (
 	APIURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
 )
 
-func New(nameSpace uuid.UUID, value string) UUID {
-	nameSpacedId := uuid.NewSHA1(nameSpace, []byte(value))
-	return UUID(nameSpacedId)
+func New(value string) UUID {
+	if u, err := url.Parse(value); err == nil {
+		if strings.HasSuffix(u.Hostname(), ".api.modding.engineer") || u.Hostname() == "api.modding.engineer" {
+			return newId(APIURLNameSpace, u.String())
+		}
+	}
+	if strings.HasSuffix(value, ".api.modding.engineer") || value == "api.modding.engineer" {
+		return newId(APIDNSNameSpace, value)
+	}
+	if strings.HasSuffix(value, ".modding.engineer") || value == "modding.engineer" {
+		return newId(DNSNameSpace, value)
+	}
+	panic(fmt.Errorf("could not resolve namespace for value: %v", value))
+}
+
+func newId(nameSpace uuid.UUID, value string) UUID {
+	return UUID(uuid.NewSHA1(nameSpace, []byte(value)))
 }
 
 func FromAPIURL(apiUrl string) UUID {
@@ -28,57 +42,20 @@ func FromAPIURL(apiUrl string) UUID {
 	if u.Hostname() != "api.modding.engineer" && !strings.HasSuffix(u.Hostname(), ".api.modding.engineer") {
 		panic(fmt.Errorf("refusing to create id for non-API url: %v", u.String()))
 	}
-	return New(APIURLNameSpace, u.String())
+	return New(u.String())
 }
 
-func FromDomain(id uuid.UUID, newHost string) UUID {
-	var U UUID
-	switch id {
-	case DNSNameSpace:
-		if newHost != "modding.engineer" && !strings.HasSuffix(newHost, ".modding.engineer") {
-			panic(fmt.Errorf("refusing to create id for invalid sub-domain: %v", newHost))
-		}
-		if strings.HasSuffix(newHost, ".modding.engineer") {
-			U = New(id, strings.TrimSuffix(newHost, ".modding.engineer"))
-			break
-		}
-		U = New(id, newHost)
-	case APIDNSNameSpace:
-		if newHost != "api.modding.engineer" && !strings.HasSuffix(newHost, ".api.modding.engineer") {
-			panic(fmt.Errorf("refusing to create id for invalid sub-domain: %v", newHost))
-		}
-		if strings.HasSuffix(newHost, ".api.modding.engineer") {
-			U = New(id, strings.TrimSuffix(newHost, ".api.modding.engineer"))
-			break
-		}
-		U = New(id, newHost)
-	default:
-		panic(fmt.Errorf("refusing to create id in unknown namespace: %v", id.String()))
+func FromDomain(newHost string) UUID {
+	if strings.HasSuffix(newHost, ".api.modding.engineer") || newHost == "api.modding.engineer" {
+		return newId(APIDNSNameSpace, newHost)
 	}
-	return U
+	if strings.HasSuffix(newHost, ".modding.engineer") || newHost == "modding.engineer" {
+		return newId(DNSNameSpace, newHost)
+	}
+	panic(fmt.Errorf("refusing to create id for unknown host: %v", newHost))
 }
 
 func (u UUID) String() string { return uuid.UUID(u).String() }
-func (u UUID) Validate(nameSpace uuid.UUID, value string) bool {
-	switch nameSpace {
-	case DNSNameSpace:
-		if strings.HasSuffix(value, ".modding.engineer") {
-			return u.String() == FromDomain(DNSNameSpace, value).String()
-		} else if value == "modding.engineer" {
-			return u.String() == FromDomain(DNSNameSpace, value).String()
-		}
-	case APIDNSNameSpace:
-		if strings.HasSuffix(value, ".api.modding.engineer") {
-			return u.String() == FromDomain(APIDNSNameSpace, value).String()
-		} else if value == "api.modding.engineer" {
-			return u.String() == FromDomain(APIDNSNameSpace, value).String()
-		}
-	case APIURLNameSpace:
-		apiUrl, err := url.Parse(value)
-		if err != nil {
-			return false
-		}
-		return u.String() == FromAPIURL(apiUrl.String()).String()
-	}
-	return false
+func (u UUID) Validate(value string) bool {
+	return u.String() == New(value).String()
 }

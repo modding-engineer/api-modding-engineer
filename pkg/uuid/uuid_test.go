@@ -38,7 +38,7 @@ func TestFromAPIURL(t *testing.T) {
 				t.Errorf("FromAPIURL() = %v, want %v", got, tt.want)
 			} else {
 				t.Run("validated", func(t *testing.T) {
-					if !got.Validate(APIURLNameSpace, tt.args.apiUrl) {
+					if !got.Validate(tt.args.apiUrl) {
 						t.Errorf("FromAPIURL() did not create a validated uuid; got: %v", got.String())
 					}
 				})
@@ -76,38 +76,27 @@ func TestFromDomain(t *testing.T) {
 		{
 			"Sub-domain uuid",
 			args{DNSNameSpace, "sub.modding.engineer"},
-			UUID(uuid.MustParse("be3f8955-ef1d-5f8c-8591-6c2215f53024")),
+			UUID(uuid.MustParse("1323aeaf-e74d-5d50-9a73-d347568c49d9")),
 		},
 		{
 			"API sub-domain uuid",
 			args{APIDNSNameSpace, "sub.api.modding.engineer"},
-			UUID(uuid.MustParse("542588a7-38ea-56fe-92ac-b85ae42ed951")),
+			UUID(uuid.MustParse("f4c524c2-d6c0-5c12-bf55-2869dd225f21")),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FromDomain(tt.args.id, tt.args.newHost); !reflect.DeepEqual(got, tt.want) {
+			if got := FromDomain(tt.args.newHost); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FromDomain() = %v, want %v", got, tt.want)
 			} else {
 				t.Run("validated", func(t *testing.T) {
-					if !got.Validate(tt.args.id, tt.args.newHost) {
+					if !got.Validate(tt.args.newHost) {
 						t.Errorf("FromDomain() did not create a validated uuid; got: %v", got.String())
 					}
 				})
 			}
 		})
 	}
-	t.Run("panics with invalid namespace id", func(t *testing.T) {
-		panicId := uuid.New()
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("using namespace %v should have generated a panic", panicId.String())
-			} else {
-				fmt.Println("\trecovered from panic:", r)
-			}
-		}()
-		_ = FromDomain(panicId, "modding.engineer")
-	})
 	t.Run("panics with invalid host", func(t *testing.T) {
 		panicHost := "example.com"
 		defer func() {
@@ -117,10 +106,10 @@ func TestFromDomain(t *testing.T) {
 				fmt.Println("\trecovered from panic:", r)
 			}
 		}()
-		_ = FromDomain(DNSNameSpace, panicHost)
+		_ = FromDomain(panicHost)
 	})
 	t.Run("panics with invalid api host", func(t *testing.T) {
-		panicHost := "blert.modding.engineer"
+		panicHost := "api.example.com"
 		defer func() {
 			if r := recover(); r == nil {
 				t.Errorf("using hostname %v should have generated a panic", panicHost)
@@ -128,14 +117,13 @@ func TestFromDomain(t *testing.T) {
 				fmt.Println("\trecovered from panic:", r)
 			}
 		}()
-		_ = FromDomain(APIDNSNameSpace, panicHost)
+		_ = FromDomain(panicHost)
 	})
 }
 
 func TestNew(t *testing.T) {
 	type args struct {
-		nameSpace uuid.UUID
-		value     string
+		value string
 	}
 	tests := []struct {
 		name string
@@ -146,7 +134,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.nameSpace, tt.args.value); !reflect.DeepEqual(got, tt.want) {
+			if got := New(tt.args.value); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
