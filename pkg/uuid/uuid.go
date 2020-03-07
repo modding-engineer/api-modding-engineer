@@ -7,12 +7,13 @@ import (
 	"strings"
 )
 
-type UUID uuid.UUID
-
 var (
 	dnsNameSpace    = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("modding.engineer"))
 	apiURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
+	Nil             = UUID([16]byte{})
 )
+
+type UUID uuid.UUID
 
 func DNSNamespace() UUID { return UUID(dnsNameSpace) }
 func URLNamespace() UUID { return UUID(apiURLNameSpace) }
