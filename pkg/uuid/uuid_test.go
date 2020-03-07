@@ -103,17 +103,6 @@ func TestFromDomain(t *testing.T) {
 		}()
 		_ = FromDomain(panicHost)
 	})
-	t.Run("panics with invalid api host", func(t *testing.T) {
-		panicHost := "api.example.com"
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("using hostname %v should have generated a panic", panicHost)
-			} else {
-				fmt.Println("\trecovered from panic:", r)
-			}
-		}()
-		_ = FromDomain(panicHost)
-	})
 }
 
 func TestNew(t *testing.T) {
