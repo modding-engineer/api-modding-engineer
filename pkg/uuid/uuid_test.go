@@ -147,6 +147,17 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+	t.Run("panics with unknown uuid", func(t *testing.T) {
+		panicValue := uuid.New()
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("using value %v should have generated a panic", panicValue)
+			} else {
+				fmt.Println("\trecovered from panic:", r)
+			}
+		}()
+		_ = New(panicValue)
+	})
 	t.Run("panics with unresolved namespace", func(t *testing.T) {
 		panicValue := struct{}{}
 		defer func() {
@@ -158,7 +169,6 @@ func TestNew(t *testing.T) {
 		}()
 		_ = New(panicValue)
 	})
-
 }
 
 var _ fmt.Stringer = new(UUID)
