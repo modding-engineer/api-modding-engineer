@@ -25,5 +25,5 @@ jobs:
       name: Install dependencies
     - run: go test -v ./...
       name: Run Tests
-    - run: echo Nothing to build at this time; go build -v .
+    - run: echo "Nothing to build at this time; go build -v ."
       name: Build
