@@ -71,17 +71,12 @@ func TestFromDomain(t *testing.T) {
 		{
 			"Root domain uuid",
 			args{dnsNameSpace, "modding.engineer"},
-			UUID(uuid.MustParse("5d987235-de1d-5db2-9c14-ec2034a49528")),
+			UUID(uuid.MustParse("3f23498c-b045-523a-94ab-dd0e7d7b973c")),
 		},
 		{
 			"Sub-domain uuid",
 			args{dnsNameSpace, "sub.modding.engineer"},
 			UUID(uuid.MustParse("1323aeaf-e74d-5d50-9a73-d347568c49d9")),
-		},
-		{
-			"API sub-domain uuid",
-			args{apiDNSNameSpace, "sub.api.modding.engineer"},
-			UUID(uuid.MustParse("f4c524c2-d6c0-5c12-bf55-2869dd225f21")),
 		},
 	}
 	for _, tt := range tests {
@@ -91,7 +86,7 @@ func TestFromDomain(t *testing.T) {
 			} else {
 				t.Run("validated", func(t *testing.T) {
 					if !got.Validate(tt.args.newHost) {
-						t.Errorf("FromDomain() did not create a validated uuid; got: %v", got.String())
+						t.Errorf("FromDomain() did not create a valid uuid for %v; got: %v", tt.args.newHost, got.String())
 					}
 				})
 			}

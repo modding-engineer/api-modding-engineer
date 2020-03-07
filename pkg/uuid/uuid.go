@@ -11,21 +11,43 @@ type UUID uuid.UUID
 
 var (
 	dnsNameSpace    = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("modding.engineer"))
-	apiDNSNameSpace = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("api.modding.engineer"))
 	apiURLNameSpace = uuid.NewSHA1(uuid.NameSpaceURL, []byte("https://api.modding.engineer"))
 )
 
-func New(value string) UUID {
-	if u, err := url.Parse(value); err == nil {
+func newFromString(v string) (UUID, error) {
+	if u, err := url.Parse(v); err == nil {
 		if strings.HasSuffix(u.Hostname(), ".api.modding.engineer") || u.Hostname() == "api.modding.engineer" {
-			return newId(apiURLNameSpace, u.String())
+			if u.String() == "https://api.modding.engineer" {
+				return UUID(apiURLNameSpace), nil
+			}
+			return newId(apiURLNameSpace, u.String()), nil
 		}
+	} else {
+		return UUID(uuid.Nil), fmt.Errorf("could not resolve namespace for URL value: %v", v)
 	}
-	if strings.HasSuffix(value, ".api.modding.engineer") || value == "api.modding.engineer" {
-		return newId(apiDNSNameSpace, value)
+	if strings.HasSuffix(v, ".modding.engineer") || v == "modding.engineer" {
+		if v == "modding.engineer" {
+			return UUID(dnsNameSpace), nil
+		}
+		return newId(dnsNameSpace, v), nil
 	}
-	if strings.HasSuffix(value, ".modding.engineer") || value == "modding.engineer" {
-		return newId(dnsNameSpace, value)
+	return UUID(uuid.Nil), fmt.Errorf("could not resolve namespace for value: %v", v)
+}
+
+func New(value interface{}) UUID {
+	switch v := value.(type) {
+	case string:
+		id, err := newFromString(v)
+		if err != nil {
+			panic(err)
+		}
+		return id
+	case fmt.Stringer:
+		id, err := newFromString(v.String())
+		if err != nil {
+			panic(err)
+		}
+		return id
 	}
 	panic(fmt.Errorf("could not resolve namespace for value: %v", value))
 }
@@ -46,10 +68,10 @@ func FromAPIURL(apiUrl string) UUID {
 }
 
 func FromDomain(newHost string) UUID {
-	if strings.HasSuffix(newHost, ".api.modding.engineer") || newHost == "api.modding.engineer" {
-		return newId(apiDNSNameSpace, newHost)
-	}
 	if strings.HasSuffix(newHost, ".modding.engineer") || newHost == "modding.engineer" {
+		if newHost == "modding.engineer" {
+			return UUID(dnsNameSpace)
+		}
 		return newId(dnsNameSpace, newHost)
 	}
 	panic(fmt.Errorf("refusing to create id for unknown host: %v", newHost))
